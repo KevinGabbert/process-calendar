@@ -10,48 +10,56 @@ namespace ProcessCalendar
 {
     class Program
     {
+        public const string DETECTED_RUNNING = " detected running ";
+
         static void Main(string[] args)
         {
-            Console.WriteLine("Process Calendar v9.22.10 (proof of concept)" + DateTime.Now.ToShortTimeString());
+            Console.WriteLine("Process Calendar v9.23.10" + DateTime.Now.ToShortTimeString());
 
-            const string userName = "uuuuu";
-            const string password = "uuuuu";
+            const string userName = "iiiiii";
+            const string password = "iiiiiiii";
 
             DateTime sketchupStartTime = new DateTime();
             DateTime devEnvStartTime = new DateTime();
             DateTime chromeStartTime = new DateTime();
+            DateTime firefoxStartTime = new DateTime();
 
             while (true)
             {
                 bool sketchupStillRunning = false;
                 bool devEnvStillRunning = false;
                 bool chromeStillRunning = false;
+                bool firefoxStillRunning = false;
 
                 Process[] processlist = Process.GetProcesses();
 
                 Console.WriteLine("Start " + DateTime.Now.ToShortTimeString());
                 foreach (Process processItem in processlist)
                 {
-                    //Console.WriteLine("{0}", processItem.ProcessName);
-
                     switch (processItem.ProcessName)
                     {
                         case "SketchUp":
                             sketchupStartTime = processItem.StartTime;
                             sketchupStillRunning = true;
-                            Console.WriteLine("Sketchup detected running " + DateTime.Now.ToShortTimeString());
+                            Program.LogDetect(processItem);
                             break;
 
                         case "devenv":
                             devEnvStartTime = processItem.StartTime;
                             devEnvStillRunning = true;
-                            Console.WriteLine("Visual Studio detected running " + DateTime.Now.ToShortTimeString());
+                            Program.LogDetect(processItem);
                             break;
 
                         case "chrome":
                             chromeStartTime = processItem.StartTime;
                             chromeStillRunning = true;
-                            Console.WriteLine("Chrome detected running " + DateTime.Now.ToShortTimeString());
+                            Program.LogDetect(processItem);
+                            break;
+
+                        case "firefox":
+                            firefoxStartTime = processItem.StartTime;
+                            firefoxStillRunning = true;
+                            Program.LogDetect(processItem);
                             break;
 
                         default:
@@ -78,10 +86,18 @@ namespace ProcessCalendar
 
                 if ((!chromeStillRunning) && (chromeStartTime != new DateTime()))
                 {
-                    Console.WriteLine("Chrome presume stopped. Logging to Calendar");
+                    Console.WriteLine("Chrome presumed stopped. Logging to Calendar");
                     Program.CreateEntry(userName, password, "Google Chrome", "", chromeStartTime, DateTime.Now);
                     Console.WriteLine("Chrome activity logged " + DateTime.Now.ToShortTimeString());
                     chromeStartTime = new DateTime();
+                }
+
+                if ((!firefoxStillRunning) && (firefoxStartTime != new DateTime()))
+                {
+                    Console.WriteLine("Firefox presumed stopped. Logging to Calendar");
+                    Program.CreateEntry(userName, password, "Mozilla Firefox", "", firefoxStartTime, DateTime.Now);
+                    Console.WriteLine("Firefox activity logged " + DateTime.Now.ToShortTimeString());
+                    firefoxStartTime = new DateTime();
                 }
 
                 Console.WriteLine("Sleeping for 1 minute");
@@ -89,6 +105,10 @@ namespace ProcessCalendar
             }
         }
 
+        private static void LogDetect(Process processItem)
+        {
+            Console.WriteLine(processItem.MainWindowTitle + DETECTED_RUNNING + DateTime.Now.ToShortTimeString());
+        }
         private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("My Google Calendar Service");
         public static void CreateEntry(string userName, string password, string title, string description, DateTime start, DateTime end)
         {
