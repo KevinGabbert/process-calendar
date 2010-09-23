@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Diagnostics;
+using System.Threading;
 using Google.GData.Calendar;
 using Google.GData.Client;
 using Google.GData.Extensions;
-using System.Net;
+using System.Net; //for browser windows..
 
 namespace ProcessCalendar
 {
@@ -10,59 +12,81 @@ namespace ProcessCalendar
     {
         static void Main(string[] args)
         {
-            Program.CreateEntry("xxxxx", "xxxxxx", "TEST automated Entry", "test automated description", DateTime.Now, DateTime.Now.AddHours(1));
+            Console.WriteLine("Process Calendar v9.22.10 (proof of concept)" + DateTime.Now.ToShortTimeString());
 
-            //Process[] processlist = Process.GetProcesses();
+            const string userName = "uuuuu";
+            const string password = "uuuuu";
 
-            //foreach(Process processItem in processlist)
-            //{
-            //    Console.WriteLine("Process: {0} ID: {1}", processItem.ProcessName, processItem.Id);
+            DateTime sketchupStartTime = new DateTime();
+            DateTime devEnvStartTime = new DateTime();
+            DateTime chromeStartTime = new DateTime();
 
-            //    //Set start flag
+            while (true)
+            {
+                bool sketchupStillRunning = false;
+                bool devEnvStillRunning = false;
+                bool chromeStillRunning = false;
 
-            //    switch (processItem.ProcessName)
-            //    {
-            //        case "SketchUp":
-            //            //grab processItem.StartTime
-            //            //if flag is not set, then set a flag.  (SketchUp)
-            //            //else check to see if it has the same start time.
-            //            //yes? ignore.
-            //            //no? set CREATE ENTRY flag, set flag to true
-            //            break;
+                Process[] processlist = Process.GetProcesses();
 
-            //        case "devenv":
-            //            //grab processItem.StartTime
-            //            //set a flag.  (devenv)
-            //            //else check to see if it has the same start time.
-            //            //yes? ignore.
-            //            //no? set CREATE ENTRY flag, set flag to true
-            //            break;
+                Console.WriteLine("Start " + DateTime.Now.ToShortTimeString());
+                foreach (Process processItem in processlist)
+                {
+                    //Console.WriteLine("{0}", processItem.ProcessName);
 
-            //        case "chrome":
-            //            //grab processItem.StartTime
-            //            //set a flag. (chrome)
-            //            //else check to see if it has the same start time.
-            //            //yes? ignore.
-            //            //no? set CREATE ENTRY flag, set flag to true
-            //            break;
+                    switch (processItem.ProcessName)
+                    {
+                        case "SketchUp":
+                            sketchupStartTime = processItem.StartTime;
+                            sketchupStillRunning = true;
+                            Console.WriteLine("Sketchup detected running " + DateTime.Now.ToShortTimeString());
+                            break;
 
-            //        default:
-            //            break;
-            //    }
+                        case "devenv":
+                            devEnvStartTime = processItem.StartTime;
+                            devEnvStillRunning = true;
+                            Console.WriteLine("Visual Studio detected running " + DateTime.Now.ToShortTimeString());
+                            break;
 
-            //    //set END flag
-                
-            //    //Do we have any CREATE ENTRY flags?  Great, create entry
+                        case "chrome":
+                            chromeStartTime = processItem.StartTime;
+                            chromeStillRunning = true;
+                            Console.WriteLine("Chrome detected running " + DateTime.Now.ToShortTimeString());
+                            break;
 
-            //}
-
-            //Console.ReadKey(true);
-
-            //p.StartTime (Shows the time the process started)
-            //p.TotalProcessorTime (Shows the amount of CPU time the process has taken)
-            //p.Threads ( gives access to the collection of threads in the process)
+                        default:
+                            break;
+                    }
+                }
 
 
+                if ((!sketchupStillRunning) && (sketchupStartTime != new DateTime()))
+                {
+                    Console.WriteLine("Sketchup presumed stopped. Logging to Calendar");
+                    Program.CreateEntry(userName, password, "Google Sketchup", "", sketchupStartTime, DateTime.Now);
+                    Console.WriteLine("Sketchup activity logged " + DateTime.Now.ToShortTimeString());
+                    sketchupStartTime = new DateTime();
+                }
+
+                if ((!devEnvStillRunning) && (devEnvStartTime != new DateTime()))
+                {
+                    Console.WriteLine("Visual Studio presumed stopped. Logging to Calendar");
+                    Program.CreateEntry(userName, password, "Visual Studio", "", devEnvStartTime, DateTime.Now);
+                    Console.WriteLine("Visual Studio activity logged " + DateTime.Now.ToShortTimeString());
+                    devEnvStartTime = new DateTime();
+                }
+
+                if ((!chromeStillRunning) && (chromeStartTime != new DateTime()))
+                {
+                    Console.WriteLine("Chrome presume stopped. Logging to Calendar");
+                    Program.CreateEntry(userName, password, "Google Chrome", "", chromeStartTime, DateTime.Now);
+                    Console.WriteLine("Chrome activity logged " + DateTime.Now.ToShortTimeString());
+                    chromeStartTime = new DateTime();
+                }
+
+                Console.WriteLine("Sleeping for 1 minute");
+                Thread.Sleep(new TimeSpan(0,0,1,0));   
+            }
         }
 
         private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("My Google Calendar Service");
