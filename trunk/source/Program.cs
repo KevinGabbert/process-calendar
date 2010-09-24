@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using Google.GData.Calendar;
@@ -14,15 +15,17 @@ namespace ProcessCalendar
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Process Calendar v9.23.10" + DateTime.Now.ToShortTimeString());
+            Console.WriteLine("Process Calendar v9.23.10b" + DateTime.Now.ToShortTimeString());
 
-            const string userName = "iiiiii";
-            const string password = "iiiiiiii";
+            const string userName = "hhhhhhh";
+            const string password = "hdhdhdtd";
 
             DateTime sketchupStartTime = new DateTime();
             DateTime devEnvStartTime = new DateTime();
             DateTime chromeStartTime = new DateTime();
             DateTime firefoxStartTime = new DateTime();
+
+            var toDo = new CalendarLogManager();
 
             while (true)
             {
@@ -39,24 +42,32 @@ namespace ProcessCalendar
                     switch (processItem.ProcessName)
                     {
                         case "SketchUp":
+                            toDo.AddOrUpdate(processItem as ProcessToRecord, true);
+
                             sketchupStartTime = processItem.StartTime;
                             sketchupStillRunning = true;
                             Program.LogDetect(processItem);
                             break;
 
                         case "devenv":
+                            //toDo.AddOrUpdate(processItem.Id, true);
+
                             devEnvStartTime = processItem.StartTime;
                             devEnvStillRunning = true;
                             Program.LogDetect(processItem);
                             break;
 
                         case "chrome":
+                            //toDo.AddOrUpdate(processItem.Id, true);
+
                             chromeStartTime = processItem.StartTime;
                             chromeStillRunning = true;
                             Program.LogDetect(processItem);
                             break;
 
                         case "firefox":
+                            //toDo.AddOrUpdate(processItem.Id, true);
+
                             firefoxStartTime = processItem.StartTime;
                             firefoxStillRunning = true;
                             Program.LogDetect(processItem);
@@ -67,6 +78,7 @@ namespace ProcessCalendar
                     }
                 }
 
+                //ToDo.Log() //goes through internal list and logs everything in it.
 
                 if ((!sketchupStillRunning) && (sketchupStartTime != new DateTime()))
                 {
@@ -128,8 +140,10 @@ namespace ProcessCalendar
                     _service.setUserCredentials(userName, password);
                 }
 
-                Uri postUri = new Uri("http://www.google.com/calendar/feeds/kevingabbert@gmail.com/private/full");
-
+                //hecate-d
+                Uri postUri = new Uri("http://www.google.com/calendar/feeds/fq4am35og85t9qenbpn99gfk80%40group.calendar.google.com/private/full");
+                          //IHAPPYDAY "http://www.google.com/calendar/feeds/einraj3jdi67j9qf3crq8bqbhc%40group.calendar.google.com/private/full"
+                
                 GDataGAuthRequestFactory requestFactory = (GDataGAuthRequestFactory)_service.RequestFactory;
 
                 requestFactory.CreateRequest(GDataRequestType.Insert, postUri);
@@ -148,3 +162,10 @@ namespace ProcessCalendar
         }
     }
 }
+
+
+                    //CalendarFeed cal_Feed = RetrievingOwnGoogleCalendars();
+                    //foreach (CalendarEntry centry in cal_Feed.Entries)
+                    //{
+                    //    cmbGoogleCalendar.Items.Add(centry);
+                    //}
