@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
 
 namespace ProcessCalendar
 {
@@ -12,23 +12,36 @@ namespace ProcessCalendar
             base.Add(process);
         }
 
-        public void AddOrUpdate(ProcessToRecord process, bool stillRunning)
+        public void AddOrUpdate(Process process, bool stillRunning)
         {
-            //look up by ID. (Use Linq)
-            ProcessToRecord item = this.Single(s => s == process);
+            try
+            {
+                int i = 0;
+                foreach (ProcessToRecord entry in this.Where(entry => entry.Id == process.Id))
+                {
+                    i++;
+                    entry.StillRunning = stillRunning;
+                    //StartTime = new DateTime();
+                    break;
+                }
 
-            //-can't find? create a new process
+                if (i == 0)
+                {
+                    ProcessToRecord item = new ProcessToRecord();
 
-            //If null then keep going
+                    item.Id = process.Id;
+                    item.ProcessName = process.ProcessName;
+                    item.StartTime = process.StartTime;
+                    item.StillRunning = stillRunning;
 
-            //- CAN find? Update the one in there
-            //- this[x] = process as ProcessToRecord;
-            //- this[x].StillRunning = stillRunning
-            item = process; //overwrite what was there
-            item.StillRunning = stillRunning;
+                    base.Add(item);
+                }
 
-
-            //base.Add(process);
+            }
+            catch (InvalidOperationException ix)
+            {
+                
+            }
         }
 
         public int StilRunning { get; set; }
