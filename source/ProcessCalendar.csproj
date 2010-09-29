@@ -57,9 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalendarLogManager.cs" />
-    <Compile Include="ProcessToRecord.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="ProcessToRecord.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
