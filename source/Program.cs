@@ -18,8 +18,12 @@ namespace ProcessCalendar
         {
             Console.WriteLine("Process Calendar v10.03.10" + DateTime.Now.ToShortTimeString());
 
-            const string userName = "euiei";
-            const string password = "euiueieui";
+            var getUserInfo = new Login_Form();
+
+            getUserInfo.ShowDialog();  //Code Execution will stop at this point and wait until user has dismissed the Login form.
+
+            string userName = getUserInfo.User; 
+            string password = getUserInfo.Password;
 
             var toDo = new CalendarLogManager();
 
