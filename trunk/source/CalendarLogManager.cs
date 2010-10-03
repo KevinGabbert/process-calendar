@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace ProcessCalendar
 {
-    public class CalendarLogManager: List<ProcessToRecord>
+    public class CalendarLogManager: List<RecordedProcess>
     {
-        public void Add(ProcessToRecord process, bool stillRunning)
+        public void Add(RecordedProcess process, bool stillRunning)
         {
-            base.Add(process);
+            base.Add(process);  
         }
 
         public void AddOrUpdate(Process process, bool stillRunning)
@@ -17,22 +17,23 @@ namespace ProcessCalendar
             try
             {
                 int i = 0;
-                foreach (ProcessToRecord entry in this.Where(entry => entry.Id == process.Id))
+                foreach (RecordedProcess entry in this.Where(entry => entry.Id == process.Id))
                 {
                     i++;
                     entry.StillRunning = stillRunning;
-                    //StartTime = new DateTime();
                     break;
                 }
 
                 if (i == 0)
                 {
-                    ProcessToRecord item = new ProcessToRecord();
+                    var item = new RecordedProcess();
 
                     item.Id = process.Id;
                     item.ProcessName = process.ProcessName;
                     item.StartTime = process.StartTime;
                     item.StillRunning = stillRunning;
+
+                    item.MainWindowTitle = process.MainWindowTitle.ToString();
 
                     base.Add(item);
                 }

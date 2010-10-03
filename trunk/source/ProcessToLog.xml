@@ -1,0 +1,6 @@
+﻿<ProcessesToLog version="1">
+    <Process>SketchUp</Process>
+    <Process>devenv</Process>
+    <Process>chrome</Process>
+    <Process>firefox</Process>
+</ProcessesToLog>
