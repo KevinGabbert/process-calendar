@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -15,30 +16,37 @@ namespace ProcessCalendar
         public const string DETECTED_RUNNING = " detected running ";
         public static Uri _calendarToPost = new Uri("http://www.google.com/calendar/feeds/default/private/full");
         private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("processLogService");
+        public const string VERSION = "Process Calendar v10.03.10a ";
+
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Process Calendar v10.03.10" + DateTime.Now.ToShortTimeString());
+            Console.WriteLine(VERSION + DateTime.Now.ToShortTimeString());
 
-            var getUserInfo = new Login_Form();
+            var userInfoForm = new Login_Form();
+            userInfoForm.ShowDialog();  
+            
+            //*** Code Execution will stop at this point and wait until user has dismissed the Login form. ***//
 
-            getUserInfo.ShowDialog();  //Code Execution will stop at this point and wait until user has dismissed the Login form.
+            _calendarToPost = userInfoForm.PostURI;
+            Program.LogWatchedProcesses(Program.GetWatchList(), userInfoForm.User, userInfoForm.Password);
+        }
 
-            string userName = getUserInfo.User; 
-            string password = getUserInfo.Password;
-            _calendarToPost = getUserInfo.PostURI;
+        private static IEnumerable<XElement> GetWatchList()
+        {
+            return from p in XElement.Load(@"..\..\ProcessToLog.xml").Elements("Process")
+                   select p;
+        }
 
+        private static void LogWatchedProcesses(IEnumerable<XElement> processesToWatch, string userName, string password)
+        {
             var toDo = new CalendarLogManager();
-
-            var processes = from p in XElement.Load(@"..\..\ProcessToLog.xml").Elements("Process")
-                            select p;
-
-            while (true)
+            while (true) //ToDo: Time limit should be set in XML
             {
                 Process[] processlist = Process.GetProcesses();
                 
                 Program.Reset(toDo);
-                Program.AddOrUpdate_Matching_Processes(toDo, processlist, processes);
+                Program.AddOrUpdate_Matching_Processes(toDo, processlist, processesToWatch);
                 Program.Log_Stopped_Processes(toDo, userName, password);
 
                 Console.WriteLine("Sleeping for 1 minute");
@@ -51,7 +59,7 @@ namespace ProcessCalendar
             foreach (RecordedProcess recordedProcess in toDo.Where(process => (!process.StillRunning) && (process.StartTime != new DateTime())))
             {
                 Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar: " + _calendarToPost.OriginalString);
-                Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle, recordedProcess.StartTime, DateTime.Now);
+                Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle + ",  " + VERSION, recordedProcess.StartTime, DateTime.Now);
                 Console.WriteLine(recordedProcess.ProcessName + " activity logged " + DateTime.Now.ToShortTimeString());
 
                 toDo.Remove(recordedProcess);
