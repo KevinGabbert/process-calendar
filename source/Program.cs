@@ -13,6 +13,7 @@ namespace ProcessCalendar
     class Program
     {
         public const string DETECTED_RUNNING = " detected running ";
+        public static Uri _calendarToPost = new Uri("http://www.google.com/calendar/feeds/default/private/full");
 
         static void Main(string[] args)
         {
@@ -24,6 +25,7 @@ namespace ProcessCalendar
 
             string userName = getUserInfo.User; 
             string password = getUserInfo.Password;
+            _calendarToPost = getUserInfo.PostURI;
 
             var toDo = new CalendarLogManager();
 
@@ -48,7 +50,7 @@ namespace ProcessCalendar
             foreach (RecordedProcess recordedProcess in toDo.Where(process => (!process.StillRunning) && (process.StartTime != new DateTime())))
             {
                 Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar");
-                Program.CreateEntry(userName, password, recordedProcess.MainWindowTitle, "", recordedProcess.StartTime, DateTime.Now);
+                Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle, recordedProcess.StartTime, DateTime.Now);
                 Console.WriteLine(recordedProcess.ProcessName + " activity logged " + DateTime.Now.ToShortTimeString());
 
                 toDo.Remove(recordedProcess);
@@ -85,6 +87,7 @@ namespace ProcessCalendar
             Console.WriteLine(processItem.ProcessName + DETECTED_RUNNING + DateTime.Now.ToShortTimeString());
         }
         private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("My Google Calendar Service");
+    
         public static void CreateEntry(string userName, string password, string title, string description, DateTime start, DateTime end)
         {
             try
@@ -103,16 +106,13 @@ namespace ProcessCalendar
                     _service.setUserCredentials(userName, password);
                 }
 
-                //hecate-d
-                Uri postUri = new Uri("http://www.google.com/calendar/feeds/fq4am35og85t9qenbpn99gfk80%40group.calendar.google.com/private/full");
-                          //IHAPPYDAY "http://www.google.com/calendar/feeds/einraj3jdi67j9qf3crq8bqbhc%40group.calendar.google.com/private/full"
-                
                 GDataGAuthRequestFactory requestFactory = (GDataGAuthRequestFactory)_service.RequestFactory;
+                requestFactory.CreateRequest(GDataRequestType.Insert, _calendarToPost);
 
-                requestFactory.CreateRequest(GDataRequestType.Insert, postUri);
+                //(new GDataGAuthRequestFactory("", "")).CreateRequest(GDataRequestType.Insert, postUri);
 
                 // Send the request and receive the response:
-                _service.Insert(postUri, entry);
+                _service.Insert(_calendarToPost, entry);
 
                 //insertedEntry.Published
 
@@ -122,6 +122,18 @@ namespace ProcessCalendar
             {
                 Console.WriteLine(ex.Message.ToString());
             }
+        }
+
+        public static CalendarFeed RetrievingOwnGoogleCalendars(string userName, string password)
+        {
+            // Create a CalenderService and authenticate
+            CalendarService myService = new CalendarService("exampleCo-exampleApp-1");
+            myService.setUserCredentials(userName, password);
+
+            CalendarQuery query = new CalendarQuery();
+            query.Uri = new Uri("http://www.google.com/calendar/feeds/default/owncalendars/full");
+            CalendarFeed resultFeed = myService.Query(query);
+            return resultFeed;
         }
     }
 }
