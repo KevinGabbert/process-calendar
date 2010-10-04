@@ -14,6 +14,7 @@ namespace ProcessCalendar
     {
         public const string DETECTED_RUNNING = " detected running ";
         public static Uri _calendarToPost = new Uri("http://www.google.com/calendar/feeds/default/private/full");
+        private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("processLogService");
 
         static void Main(string[] args)
         {
@@ -49,7 +50,7 @@ namespace ProcessCalendar
         {
             foreach (RecordedProcess recordedProcess in toDo.Where(process => (!process.StillRunning) && (process.StartTime != new DateTime())))
             {
-                Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar");
+                Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar: " + _calendarToPost.OriginalString);
                 Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle, recordedProcess.StartTime, DateTime.Now);
                 Console.WriteLine(recordedProcess.ProcessName + " activity logged " + DateTime.Now.ToShortTimeString());
 
@@ -81,13 +82,10 @@ namespace ProcessCalendar
                 }
             }
         }
-
         private static void LogDetect(Process processItem)
         {
             Console.WriteLine(processItem.ProcessName + DETECTED_RUNNING + DateTime.Now.ToShortTimeString());
-        }
-        private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("My Google Calendar Service");
-    
+        } 
         public static void CreateEntry(string userName, string password, string title, string description, DateTime start, DateTime end)
         {
             try
@@ -106,15 +104,8 @@ namespace ProcessCalendar
                     _service.setUserCredentials(userName, password);
                 }
 
-                GDataGAuthRequestFactory requestFactory = (GDataGAuthRequestFactory)_service.RequestFactory;
-                requestFactory.CreateRequest(GDataRequestType.Insert, _calendarToPost);
-
-                //(new GDataGAuthRequestFactory("", "")).CreateRequest(GDataRequestType.Insert, postUri);
-
-                // Send the request and receive the response:
+                (new GDataGAuthRequestFactory("", "")).CreateRequest(GDataRequestType.Insert, _calendarToPost);
                 _service.Insert(_calendarToPost, entry);
-
-                //insertedEntry.Published
 
                 Console.WriteLine("Event Successfully Added");
             }
@@ -127,7 +118,7 @@ namespace ProcessCalendar
         public static CalendarFeed RetrievingOwnGoogleCalendars(string userName, string password)
         {
             // Create a CalenderService and authenticate
-            CalendarService myService = new CalendarService("exampleCo-exampleApp-1");
+            CalendarService myService = new CalendarService("process-calendar");
             myService.setUserCredentials(userName, password);
 
             CalendarQuery query = new CalendarQuery();
@@ -137,10 +128,3 @@ namespace ProcessCalendar
         }
     }
 }
-
-
-                    //CalendarFeed cal_Feed = RetrievingOwnGoogleCalendars();
-                    //foreach (CalendarEntry centry in cal_Feed.Entries)
-                    //{
-                    //    cmbGoogleCalendar.Items.Add(centry);
-                    //}
