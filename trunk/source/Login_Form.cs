@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows.Forms;
+using Google.GData.Calendar;
 
 namespace ProcessCalendar
 {
@@ -13,6 +14,7 @@ namespace ProcessCalendar
 
         public string User { get; set; }
         public string Password { get; set; }
+        public System.Uri PostURI { get; set; }
 
         #endregion
 
@@ -26,7 +28,23 @@ namespace ProcessCalendar
             this.User = this.txtLogin.Text;
             this.Password = this.txtPassword.Text;
 
-            this.Hide();
+            cmbGoogleCalendar.Items.Clear();
+            CalendarFeed calFeed = Program.RetrievingOwnGoogleCalendars(this.User, this.Password);
+            foreach (CalendarEntry centry in calFeed.Entries)
+            {
+                cmbGoogleCalendar.Items.Add(centry);
+            }
+
+            cmbGoogleCalendar.DisplayMember = "Title";
+            cmbGoogleCalendar.ValueMember = "Title";
+            if (cmbGoogleCalendar.Items.Count > 0)
+            {
+                cmbGoogleCalendar.SelectedIndex = 0;
+            }
+
+            this.PostURI = new Uri("http://www.google.com/calendar/feeds/" + 
+                                  ((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().Substring(((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().LastIndexOf("/") + 1) + 
+                                  "/private/full");
         }
 
         private void LoginTextControls_TextChanged(object sender, EventArgs e)
@@ -37,6 +55,12 @@ namespace ProcessCalendar
             {
                 this.btnOK_Click(sender, e);
             }
+        }
+
+        private void btnStart_Click(object sender, EventArgs e)
+        {
+            //do we need some kind of validation here?
+            this.Hide();
         }
     }
 }
