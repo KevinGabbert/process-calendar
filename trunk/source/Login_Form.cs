@@ -41,10 +41,6 @@ namespace ProcessCalendar
             {
                 cmbGoogleCalendar.SelectedIndex = 0;
             }
-
-            this.PostURI = new Uri("http://www.google.com/calendar/feeds/" + 
-                                  ((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().Substring(((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().LastIndexOf("/") + 1) + 
-                                  "/private/full");
         }
 
         private void LoginTextControls_TextChanged(object sender, EventArgs e)
@@ -60,7 +56,21 @@ namespace ProcessCalendar
         private void btnStart_Click(object sender, EventArgs e)
         {
             //do we need some kind of validation here?
+
+            this.SetPostURI();
             this.Hide();
+        }
+
+        private void cmbGoogleCalendar_Leave(object sender, EventArgs e)
+        {
+            this.SetPostURI();
+        }
+
+        private void SetPostURI()
+        {
+            this.PostURI = new Uri("http://www.google.com/calendar/feeds/" +
+                      ((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().Substring(((CalendarEntry)(cmbGoogleCalendar.SelectedItem)).SelfUri.ToString().LastIndexOf("/") + 1) +
+                      "/private/full");
         }
     }
 }

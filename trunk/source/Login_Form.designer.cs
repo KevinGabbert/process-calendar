@@ -120,6 +120,7 @@ namespace ProcessCalendar
             this.cmbGoogleCalendar.Name = "cmbGoogleCalendar";
             this.cmbGoogleCalendar.Size = new System.Drawing.Size(226, 21);
             this.cmbGoogleCalendar.TabIndex = 8;
+            this.cmbGoogleCalendar.Leave += new System.EventHandler(this.cmbGoogleCalendar_Leave);
             // 
             // label3
             // 
