@@ -16,7 +16,7 @@ namespace ProcessCalendar
         public const string DETECTED_RUNNING = " detected running ";
         public static Uri _calendarToPost = new Uri("http://www.google.com/calendar/feeds/default/private/full");
         private static readonly Google.GData.Calendar.CalendarService _service = new CalendarService("processLogService");
-        public const string VERSION = "Process Calendar v10.03.10a ";
+        public const string VERSION = "Process Calendar v10.04.10 ";
 
 
         static void Main(string[] args)
@@ -47,24 +47,28 @@ namespace ProcessCalendar
                 
                 Program.Reset(toDo);
                 Program.AddOrUpdate_Matching_Processes(toDo, processlist, processesToWatch);
-                Program.Log_Stopped_Processes(toDo, userName, password);
+
+                IList<RecordedProcess> presumedStoppedProcesses = (from processItem in toDo.Where(element => element.StillRunning == false)
+                                                                   select processItem).Where(processItem => processItem.StartTime != new DateTime()).ToList();
+
+                for (int i = presumedStoppedProcesses.Count() - 1; i > 0; i--) 
+                {
+                    RecordedProcess current = presumedStoppedProcesses[i];
+
+                    Program.Log_Stopped_Process(current, userName, password);
+                    toDo.Remove(current);
+                }
 
                 Console.WriteLine("Sleeping for 1 minute");
                 Thread.Sleep(new TimeSpan(0,0,1,0));   
             }
         }
 
-        private static void Log_Stopped_Processes(CalendarLogManager toDo, string userName, string password)
+        private static void Log_Stopped_Process(RecordedProcess recordedProcess, string userName, string password)
         {
-            foreach (RecordedProcess recordedProcess in toDo.Where(process => (!process.StillRunning) && (process.StartTime != new DateTime())))
-            {
-                Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar: " + _calendarToPost.OriginalString);
-                Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle + ",  " + VERSION, recordedProcess.StartTime, DateTime.Now);
-                Console.WriteLine(recordedProcess.ProcessName + " activity logged " + DateTime.Now.ToShortTimeString());
-
-                toDo.Remove(recordedProcess);
-                break; //remove the rest in the next go around..
-            }
+            Console.WriteLine(recordedProcess.ProcessName + " presumed stopped. Logging to Calendar: " + _calendarToPost.OriginalString);
+            Program.CreateEntry(userName, password, recordedProcess.ProcessName, recordedProcess.MainWindowTitle + ",  " + VERSION, recordedProcess.StartTime, DateTime.Now);
+            Console.WriteLine(recordedProcess.ProcessName + " activity logged " + DateTime.Now.ToShortTimeString());
         }
         private static void Reset(IEnumerable<RecordedProcess> toDo)
         {
@@ -78,18 +82,16 @@ namespace ProcessCalendar
         private static void AddOrUpdate_Matching_Processes(CalendarLogManager toDo, IEnumerable<Process> processlist, IEnumerable<XElement> processes)
         {
             Console.WriteLine("Start " + DateTime.Now.ToShortTimeString());
-            foreach (Process processItem in processlist)
+            foreach (Process processItem in from processItem in processlist
+                                            where processItem != null
+                                            from element in processes.Where(element => element.Value == processItem.ProcessName)
+                                            select processItem)
             {
-                if (processItem != null)
-                {
-                    foreach (XElement element in processes.Where(element => element.Value == processItem.ProcessName))
-                    {
-                        Program.LogDetect(processItem);
-                        toDo.AddOrUpdate(processItem, true);
-                    }
-                }
+                Program.LogDetect(processItem);
+                toDo.AddOrUpdate(processItem, true);
             }
         }
+
         private static void LogDetect(Process processItem)
         {
             Console.WriteLine(processItem.ProcessName + DETECTED_RUNNING + DateTime.Now.ToShortTimeString());
@@ -126,10 +128,10 @@ namespace ProcessCalendar
         public static CalendarFeed RetrievingOwnGoogleCalendars(string userName, string password)
         {
             // Create a CalenderService and authenticate
-            CalendarService myService = new CalendarService("process-calendar");
+            var myService = new CalendarService("process-calendar");
             myService.setUserCredentials(userName, password);
 
-            CalendarQuery query = new CalendarQuery();
+            var query = new CalendarQuery();
             query.Uri = new Uri("http://www.google.com/calendar/feeds/default/owncalendars/full");
             CalendarFeed resultFeed = myService.Query(query);
             return resultFeed;
