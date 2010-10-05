@@ -20,6 +20,7 @@ namespace ProcessCalendar
                 foreach (RecordedProcess entry in this.Where(entry => entry.Id == process.Id))
                 {
                     i++;
+                    entry.StartTime = process.StartTime;
                     entry.StillRunning = stillRunning;
                     break;
                 }
@@ -44,7 +45,5 @@ namespace ProcessCalendar
                 
             }
         }
-
-        public int StilRunning { get; set; }
     }
 }
