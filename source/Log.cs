@@ -29,7 +29,7 @@ namespace ProcessCalendar
                 IList<RecordedProcess> presumedStoppedProcesses = (from processItem in toDo.Where(element => element.StillRunning == false)
                                                                    select processItem).Where(processItem => processItem.StartTime != new DateTime()).ToList();
 
-                for (int i = presumedStoppedProcesses.Count() - 1; i > 0; i--) //Foreach won't work here.
+                for (int i = presumedStoppedProcesses.Count() - 1; i > -1; i--) //Foreach won't work here.
                 {
                     RecordedProcess current = presumedStoppedProcesses[i];
 
