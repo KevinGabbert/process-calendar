@@ -59,6 +59,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CalendarLogManager.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="GoogleCalendar.cs" />
+    <Compile Include="Log.cs" />
     <Compile Include="Login_Form.cs">
       <SubType>Form</SubType>
     </Compile>

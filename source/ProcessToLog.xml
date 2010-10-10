@@ -3,4 +3,5 @@
     <Process>devenv</Process>
     <Process>chrome</Process>
     <Process>firefox</Process>
+    <Process>Steam</Process>
 </ProcessesToLog>
